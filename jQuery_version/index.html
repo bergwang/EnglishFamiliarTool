@@ -1,0 +1,415 @@
+<html>
+
+<head>
+    <title>Words</title>
+</head>
+
+<body>
+    <div id="workspace">
+        <div id="contentPanel">
+
+            <div id="wordPanel">
+                <div id="mainPanel" class="panel work">
+                    <div id="inputTargetArea" class="area target ">
+
+                    </div>
+                    <div id="inputShowArea" class="area input">
+
+                    </div>
+                </div>
+                <div id="dataPanel" class="data-list">
+                    <div  class="line">
+                        <div class="word">
+                            <div class="target">sdfsaf</div>
+                            <div class="input">dsfsadfsd</div>
+                        </div>
+                        <div class="detail">30s 200ms</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="listPanel">
+
+                <div id="listDataPanel">
+                    
+                </div>
+
+            </div>
+        </div>
+        <div id="actionPanel">
+            <div class="add" onclick="showDialog('popDialog'); return false;">Add</div>
+        </div>
+    </div>
+    <div id="popDialog" class="dialog-area hide">
+        <div class="dialog">
+            <div class="dialog-title">
+                Add Words
+            </div>
+            <div class="dialog-content">
+                <textarea id="addWordsArea" >
+annual
+anxious
+apparent
+artificial
+assess
+associate
+associated
+association
+bacteria
+barrier
+blame
+bond
+circumstance
+combination
+commitment
+committee
+conflict
+conservative
+consideration
+consistent
+contemporary
+contest
+convinced
+corporate
+council
+crew
+crisis
+criterion
+critic
+critical
+criticism
+criticize
+crucial
+decline
+decoration
+deliberate
+delight
+discipline
+dishonest
+downwards
+elect
+emphasis
+emphasize
+enthusiasm
+enthusiastic
+pandemic
+disease
+medical
+infection
+servere
+period
+minor
+physical
+mild
+infectious
+voyage
+                </textarea>
+            </div>
+            <div class="dialog-actions">
+                <div class="save" onclick="saveAction(); return false;">Save</div>
+                <div class="close">Cancel</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="templateArea">
+        <div id="inputTargetTemplate" class="inputTarget item">
+
+        </div>
+        <div id="inputShowTemplate" class="inputShow item">
+
+        </div>
+        <div id="inputCountDetailTemplate" class="line">
+
+        </div>
+    </div>
+</body>
+<script>
+    var lowerType = true ;
+    var wordList = [] ;
+    var currentInput = [] ;
+    var currentWord = [];
+
+    window.onload = function () {
+        document.onkeyup = function (event) {
+            if (event.code) {
+                let code = event.code.toLowerCase().replace("key", "");
+                if (code.length == 1) {
+                    pushKey(code)
+                } else {
+                    switch (code) {
+                        case "enter":
+                            WordNext();
+                            break;
+                        case "backspace":
+                            popKey();
+                            break;
+                        case "space" :
+                            pushKey(" ")
+                            break;
+                        case "period" :
+                            pushKey(".")
+                            break;
+                        default:
+                            console.log(event.code)
+                    }
+                }
+
+            }
+        }
+        wordList = getList();
+        document.getElementById("listDataPanel").innerText = wordList.length;
+
+        WordNext();
+    }
+
+    let showArea = document.getElementById("inputShowArea");
+    let targetArea = document.getElementById("inputTargetArea");
+
+    function pushKey(code) {
+        let index = currentInput.length ;
+        if(index >= currentWord.length){
+            return;
+        }
+        currentInput.push(code);
+        let nodes = document.getElementsByClassName("inputTarget") ;
+        if (nodes.length >= currentInput.length){
+            if(code != currentWord[index]){
+                nodes[index].className += " wrong" ;
+            }
+            if(code === " ") {
+                nodes[index].innerHTML = "&nbsp;";
+            }else{
+                nodes[index].innerText = code;
+            }
+        }
+        
+    }
+    function popKey(){
+        currentInput.shift() ;
+        let index = currentInput.length
+        let nodes = document.getElementsByClassName("inputTarget") ;
+        if (nodes.length >= currentInput.length){
+            nodes[index].innerText = "";
+            nodes[index].className = nodes[index].className.replace("wrong", "")  ;
+        }
+    }
+
+    function WordNext() {
+        targetArea.innerHTML = "";
+        showArea.innerHTML = "" ;
+        currentInput = [];
+
+        let word = getWord() ;
+
+        currentWord = Array.from(word);
+        targetArea.innerText = word;
+        for (let i in currentWord) {
+            let node = getTemplateNode("inputTargetTemplate");
+            //let showNode = getTemplateNode("inputShowTemplate");
+            //showNode.innerText = currentWord[i];
+            node.innerText = " ";
+            //targetArea.appendChild(showNode);
+            showArea.appendChild(node);
+        }
+    }
+    function getWord() {
+        let max = wordList.length - 1;
+
+        return wordList[getRndInteger(0, max)] ;
+    }
+
+    function getRndInteger(min, max) {
+        return Math.floor(Math.random() * (max - min) ) + min;
+    }
+    function getTemplateNode(id) {
+        let node = document.getElementById(id).cloneNode();
+        if (node) {
+            node.id = "";
+        }
+        return node;
+    }
+
+    function saveAction(){
+        let inputArea = document.getElementById("addWordsArea");
+        console.log(inputArea.value)
+        let words = inputArea.value.split("\n");
+     
+        console.log(words)
+        saveList(words);
+        wordList = getList();
+        console.log(wordList)
+        hideDialog("popDialog")
+
+        WordNext();
+    }
+
+    function saveList(data){
+        localStorage.setItem("list", JSON.stringify(data)) ;
+    }
+    function getList(){
+        let saved = localStorage.getItem("list") ;
+        if(saved){
+            return  JSON.parse(saved);
+        }
+        return [];
+    }
+
+    function showDialog(id){
+        let dialog = document.getElementById(id);
+        dialog.className = dialog.className.replace("hide", "") ;
+    }
+    function hideDialog(id){
+        let dialog = document.getElementById(id);
+        dialog.className = dialog.className + " hide" ;
+   
+    }
+
+</script>
+<style>
+    body {
+        text-align: center;
+        font-family: Arial, Helvetica;
+        margin:0;
+        padding:0;
+        height:calc(100vh - 4px);
+    }
+    div{
+        padding:0;
+        margin:0;
+        max-width:100%;
+        max-height:100%;
+    }
+    #workspace{
+        display: flex;
+        flex-direction: column;
+    }
+    #contentPanel{
+        height:calc(100vh - 60px);
+        display: flex;
+        flex-direction: row;
+    }
+    #actionPanel{
+        background-color: dodgerblue;
+        color:white;
+        height:60px;
+        margin-bottom:-4px;
+    }
+    #listPanel{
+        width:200px;
+        height:100%;
+        background-color: #c9c9c9;
+    }
+    #wordPanel{
+        height:100%;
+        width:calc(100vw - 200px)
+    }
+    #dataPanel{
+        padding:20px;
+    }
+
+    .hide{
+        display: none;
+    }
+
+    .panel {
+        margin: 0 auto;
+        padding: 30px 0;
+
+        border: 1px solid #ddd;
+        border-radius: 10px;
+    }
+
+    .work {
+        margin: 5%;
+        padding: 5%;
+        width:80%;
+        background-color: #fafafa;
+        box-shadow: 0px 0px 12px 0px #ddd;
+    }
+
+    .area {
+        margin: 0 auto;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: left;
+
+        min-height: 40px;
+
+    }
+    .area, 
+    .item{
+        font-size: 24px;
+        font-weight: 100;
+        letter-spacing: 2px;
+    }
+
+    .item {
+        letter-spacing: 0px;
+        padding: 1px;
+        text-align: center;
+    }
+    .input .item{
+        color:gray;
+    }
+
+    .inputTarget {
+        color: gray;
+    }
+
+    .inputShow {
+        color: black;
+    }
+
+    .wrong {
+        font-weight: 200;
+        color:red !important;
+        animation-name: shakeBox;
+        animation-duration:  300ms ;
+        animation-play-state: running;
+    }
+
+    .correct {
+        font-weight: 100;
+    }
+    .data-list{
+        border-top:3px dotted #a6d7d8;
+    }
+
+    .dialog-area{
+        z-index:9;
+        position: fixed;
+        top:0;
+        right:0;
+        bottom:0;
+        left:0;
+        background-color: rgba(0,0,0,0.6);
+
+    }
+
+    @keyframes shakeBox {
+        0%{
+            font-size: 1rem;
+            transform: rotate(0);
+        }
+        25%{
+            font-size:1.2rem;
+            transform: rotate(-18deg);
+        }
+        50%{
+            font-size:1.5rem;
+            transform: rotate(18deg);
+        }
+        75%{
+            font-size:1.2rem;
+            transform: rotate(-18deg);
+        }
+        100%{
+            font-size: 1rem;
+            transform: rotate(0);
+        }
+    }
+</style>
+
+</html>
